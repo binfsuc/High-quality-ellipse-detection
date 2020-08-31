@@ -1620,14 +1620,31 @@ static void region2rect( point2i * reg, int reg_size,
   y
   因此顺时针旋转90°是 (-dy,dx)
   */
+  double x0, y0, x1, y1, x2, y2, l_abs = max(modgrad->xsize, modgrad->ysize);
   l_min = l_max = w_min = w_max = 0.0;
   for(i=0; i<reg_size; i++)//用向量内积求在线段方向和与线段方向垂直方向的投影求l,w
     {
       l =  ( (double) reg[i].x - x) * dx + ( (double) reg[i].y - y) * dy;
       w = -( (double) reg[i].x - x) * dy + ( (double) reg[i].y - y) * dx;
 
-      if( l > l_max ) l_max = l;
-      if( l < l_min ) l_min = l;
+      if (l > l_max)
+		{
+			x2 = reg[i].x;
+			y2 = reg[i].y;
+			l_max = l;
+		}
+		if (l < l_min)
+		{
+			x1 = reg[i].x;
+			y1 = reg[i].y;
+			l_min = l;
+		}
+		if (abs(l) < l_abs)
+		{
+			x0 = reg[i].x;
+			y0 = reg[i].y;
+			l_abs = abs(l);
+		}
       if( w > w_max ) w_max = w;
       if( w < w_min ) w_min = w;
     }
@@ -1637,9 +1654,19 @@ static void region2rect( point2i * reg, int reg_size,
   rec->y1 = y + l_min * dy;
   rec->x2 = x + l_max * dx;
   rec->y2 = y + l_max * dy;
+  
+  rec->x1 = x1;
+  rec->y1 = y1;
+  rec->x2 = x2;
+  rec->y2 = y2;
+	
   rec->width = w_max - w_min;
   rec->x = x;
   rec->y = y;
+  
+  rec->x = x0;
+  rec->y = y0;
+	
   rec->theta = theta;
   rec->dx = dx;
   rec->dy = dy;
